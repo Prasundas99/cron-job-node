@@ -1,0 +1,15 @@
+{
+  "name": "cron-job",
+  "version": "1.0.0",
+  "description": "A flexible and efficient cron job scheduler for Node.js applications.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Prasun Das",
+  "license": "ISC"
+}

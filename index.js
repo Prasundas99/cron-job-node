@@ -6,10 +6,36 @@ import { calculateNextRun } from "./utils/calculateNextRun.js";
 const logger = createLogger();
 
 /**
- * Creates a cron job scheduler.
- * @returns {Object} An object containing methods to manage cron jobs.
+ * @typedef {Object} Job
+ * @property {Function} func - The function to be executed by the job.
+ * @property {string} cronExpression - The cron expression for scheduling.
+ * @property {?Date} lastRun - The last execution time.
+ * @property {Date} nextRun - The next execution time.
+ * @property {boolean} isActive - The job's activity status.
  */
-export const cronJob = () => {
+
+/**
+ * @typedef {Object} CronJobScheduler
+ * @property {function(string, Function, string): string} schedule - Schedule a new job
+ * @property {function(): string[]} list - Get a list of all scheduled jobs
+ * @property {function(): string[]} getFailedJobs - Get a list of failed jobs
+ * @property {function(): Array<{name: string, time: string, status: string}>} getHistory - Get the execution history of jobs
+ * @property {function(string): void} deleteExistingJobs - Delete a scheduled job
+ * @property {function(string): void} runNow - Run a job immediately
+ * @property {function(): void} start - Start the scheduler
+ * @property {function(): void} stop - Stop the scheduler
+ * @property {function(): void} pause - Pause the scheduler
+ * @property {function(): void} resume - Resume the scheduler
+ * @property {function(string, Function): void} on - Add an event listener
+ * @property {function(string, Function): void} off - Remove an event listener
+ * @property {function(): Object} getEvents - Get a list of all available events
+ */
+
+/**
+ * Creates a new cron job scheduler.
+ * @returns {CronJobScheduler} An object with various methods for job scheduling and management.
+ */
+const cronJob = () => {
   const emitter = new EventEmitter();
   const jobs = new Map();
   let timer = null;
@@ -31,7 +57,8 @@ export const cronJob = () => {
    */
   const schedule = (jobName, func, cronExpression) => {
     if (jobs.has(jobName)) {
-      throw new Error(`Job ${jobName} already exists`);
+      logger.error(`Job: ${jobName} already exists`);
+      return;
     }
     jobs.set(jobName, {
       func,
@@ -102,6 +129,10 @@ export const cronJob = () => {
    * cronJob.deleteExistingJobs('tempJob');
    */
   const deleteExistingJobs = (jobName) => {
+    if(!jobs.has(jobName)) {
+      logger.error(`Job: ${jobName} doesn't exist`);
+      return
+    }
     logger.info(`Job: ${jobName} deleted`);
     jobs.delete(jobName);
 
@@ -121,7 +152,8 @@ export const cronJob = () => {
    */
   const runNow = (jobName) => {
     if (!jobs.has(jobName)) {
-      throw new Error(`Job ${jobName} doesn't exist`);
+      logger.error(`Job: ${jobName} doesn't exist`);
+      return
     }
     const job = jobs.get(jobName);
     if (!job.isActive) {
@@ -293,17 +325,19 @@ export const cronJob = () => {
   };
 
   return {
-    schedule,
-    list,
-    getFailedJobs,
-    getHistory,
-    deleteExistingJobs,
-    runNow,
-    start,
-    stop,
-    pause,
-    resume,
-    on,
-    off,
+    schedule: schedule,
+    list: list,
+    getFailedJobs: getFailedJobs,
+    getHistory: getHistory,
+    deleteExistingJobs: deleteExistingJobs,
+    runNow: runNow,
+    start: start,
+    stop: stop,
+    pause: pause,
+    resume: resume,
+    on: on,
+    off: off,
   };
 };
+
+export default cronJob;
