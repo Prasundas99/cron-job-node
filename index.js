@@ -1,17 +1,7 @@
 import EventEmitter from "events";
-
-/**
- * Creates a logger object with info, warn, and error methods.
- * @returns {{info: function, warn: function, error: function}} Logger object
- */
-const createLogger = () => ({
-  info: (message) =>
-    console.log(`[INFO] ${new Date().toISOString()} - ${message}`),
-  warn: (message) =>
-    console.warn(`[WARN] ${new Date().toISOString()} - ${message}`),
-  error: (message) =>
-    console.error(`[ERROR] ${new Date().toISOString()} - ${message}`),
-});
+import { createLogger } from "./utils/logger.js";
+import { eventsEnum } from "./utils/constants.js";
+import { calculateNextRun } from "./utils/calculateNextRun.js";
 
 const logger = createLogger();
 
@@ -19,23 +9,13 @@ const logger = createLogger();
  * Creates a cron job scheduler.
  * @returns {Object} An object containing methods to manage cron jobs.
  */
-const createCronJob = () => {
+export const cronJob = () => {
   const emitter = new EventEmitter();
   const jobs = new Map();
   let timer = null;
   const history = [];
   const failed = new Set();
   let isPaused = false;
-  const eventsEnum = {
-    jobAdded: "jobAdded",
-    jobDeleted: "jobDeleted",
-    jobFailed: "jobFailed",
-    jobSuccess: "jobSuccess",
-    jobPaused: "jobPaused",
-    jobResumed: "jobResumed",
-    jobRun: "jobRun",
-    jobStopped: "jobStopped",
-  };
 
   /**
    * Schedules a new job with the given jobName, function, and cron expression.
@@ -264,6 +244,39 @@ const createCronJob = () => {
   };
 
   /**
+   * Adds an event listener for a specific event.
+   *
+   * @param {string} eventName - The name of the event to listen for.
+   * @param {function} listener - The callback function to execute when the event occurs.
+   * @returns {void}
+   * @example
+   * const cronJob = createCronJob();
+   * cronJob.on('jobFailed', (jobName) => {
+   *   console.log(`Job ${jobName} has failed`);
+   * });
+   */
+  const on = (eventName, listener) => {
+    emitter.on(eventName, listener);
+  };
+
+  /**
+   * Removes an event listener for a specific event.
+   *
+   * @param {string} eventName - The name of the event to remove the listener from.
+   * @param {function} listener - The callback function to remove.
+   * @returns {void}
+   * @example
+   * const cronJob = createCronJob();
+   * const logFailure = (jobName) => console.log(`Job ${jobName} has failed`);
+   * cronJob.on('jobFailed', logFailure);
+   * // ... later
+   * cronJob.off('jobFailed', logFailure);
+   */
+  const off = (eventName, listener) => {
+    emitter.off(eventName, listener);
+  };
+
+  /**
    * Checks all jobs and runs the ones that are active and have reached their next run date.
    *
    * @returns {void}
@@ -277,156 +290,6 @@ const createCronJob = () => {
         job.nextRun = calculateNextRun(job.cronExpression);
       }
     });
-  };
-  /**
-   * Calculates the next run date based on a cron expression.
-   *
-   * @param {string} cronExpression - The cron expression in the format "minute hour dayOfMonth month dayOfWeek".
-   * @return {Date} The next run date.
-   */
-  const calculateNextRun = (cronExpression) => {
-    // Helper function to parse cron fields
-    const parseCronField = (field, min, max) => {
-      if (field === "*")
-        return Array.from({ length: max - min + 1 }, (_, i) => i + min);
-      return field
-        .split(",")
-        .map((item) => {
-          if (item.includes("-")) {
-            const [start, end] = item.split("-").map(Number);
-            return Array.from({ length: end - start + 1 }, (_, i) => i + start);
-          }
-          return parseInt(item, 10);
-        })
-        .flat()
-        .filter((num) => !isNaN(num) && num >= min && num <= max)
-        .sort((a, b) => a - b);
-    };
-
-    // Parse cron expression
-    const [minute, hour, dayOfMonth, month, dayOfWeek] = cronExpression
-      .split(" ")
-      .map((field, index) => {
-        const ranges = [
-          [0, 59], // minute
-          [0, 23], // hour
-          [1, 31], // day of month
-          [1, 12], // month
-          [0, 6], // day of week
-        ];
-        return parseCronField(field, ...ranges[index]);
-      });
-
-    const getNextDate = (currentDate, field, getUnit, setUnit, addUnit) => {
-      let nextDate = new Date(currentDate);
-      let currentValue = getUnit(nextDate);
-      let nextValue = field.find((value) => value > currentValue);
-
-      if (nextValue !== undefined) {
-        setUnit(nextDate, nextValue);
-      } else {
-        setUnit(nextDate, field[0]);
-        addUnit(nextDate, 1);
-      }
-
-      return nextDate;
-    };
-
-    const isLeapYear = (year) =>
-      (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-    const getDaysInMonth = (year, month) =>
-      [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][
-        month
-      ];
-
-    let now = new Date();
-    let nextRun = new Date(now);
-    nextRun.setSeconds(0, 0);
-
-    while (true) {
-      nextRun = getNextDate(
-        nextRun,
-        minute,
-        (d) => d.getMinutes(),
-        (d, v) => d.setMinutes(v),
-        (d, v) => d.setHours(d.getHours() + v)
-      );
-      if (nextRun > now) break;
-
-      nextRun = getNextDate(
-        nextRun,
-        hour,
-        (d) => d.getHours(),
-        (d, v) => d.setHours(v),
-        (d, v) => d.setDate(d.getDate() + v)
-      );
-      if (nextRun > now) break;
-
-      const validDays = dayOfMonth.filter(
-        (d) => d <= getDaysInMonth(nextRun.getFullYear(), nextRun.getMonth())
-      );
-      nextRun = getNextDate(
-        nextRun,
-        validDays,
-        (d) => d.getDate(),
-        (d, v) => d.setDate(v),
-        (d, v) => d.setMonth(d.getMonth() + v)
-      );
-      if (nextRun > now) break;
-
-      nextRun = getNextDate(
-        nextRun,
-        month,
-        (d) => d.getMonth() + 1,
-        (d, v) => d.setMonth(v - 1),
-        (d, v) => d.setFullYear(d.getFullYear() + v)
-      );
-      if (nextRun > now) break;
-
-      const daysToAdd = dayOfWeek
-        .map((d) => (d - nextRun.getDay() + 7) % 7)
-        .sort((a, b) => a - b)[0];
-      nextRun.setDate(nextRun.getDate() + daysToAdd);
-      if (nextRun > now) break;
-
-      // If we've looped through all fields and haven't found a future date, add a minute and try again
-      nextRun.setMinutes(nextRun.getMinutes() + 1);
-    }
-
-    return nextRun;
-  };
-
-   /**
-   * Adds an event listener for a specific event.
-   * 
-   * @param {string} eventName - The name of the event to listen for.
-   * @param {function} listener - The callback function to execute when the event occurs.
-   * @returns {void}
-   * @example
-   * const cronJob = createCronJob();
-   * cronJob.on('jobFailed', (jobName) => {
-   *   console.log(`Job ${jobName} has failed`);
-   * });
-   */
-   const on = (eventName, listener) => {
-    emitter.on(eventName, listener);
-  };
-
-  /**
-   * Removes an event listener for a specific event.
-   * 
-   * @param {string} eventName - The name of the event to remove the listener from.
-   * @param {function} listener - The callback function to remove.
-   * @returns {void}
-   * @example
-   * const cronJob = createCronJob();
-   * const logFailure = (jobName) => console.log(`Job ${jobName} has failed`);
-   * cronJob.on('jobFailed', logFailure);
-   * // ... later
-   * cronJob.off('jobFailed', logFailure);
-   */
-  const off = (eventName, listener) => {
-    emitter.off(eventName, listener);
   };
 
   return {
