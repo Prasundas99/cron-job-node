@@ -1,23 +1,28 @@
-# cron-job
+# cron-job-node-js
 
 A flexible and efficient cron job scheduler for Node.js applications.
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
+- [cron-job-node-js](#cron-job-node-js)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [In ES6](#in-es6)
+  - [Demo Examples](#demo-examples)
+  - [In common JS:](#in-common-js)
 - [API](#api)
 - [Events](#events)
 - [Design Pattern](#design-pattern)
-- [When to Use](#when-to-use)
+  - [When to Use](#when-to-use)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Introduction
 
-`cron-job` is a lightweight, easy-to-use cron job scheduler for Node.js. It allows you to schedule tasks to run at specific times or intervals, manage job execution, and react to job-related events.
+`cron-job-node-js` is a lightweight, easy-to-use cron job scheduler for Node.js. It allows you to schedule tasks to run at specific times or intervals, manage job execution, and react to job-related events.
 
 ## Features
 
@@ -31,16 +36,16 @@ A flexible and efficient cron job scheduler for Node.js applications.
 ## Installation
 
 ```bash
-npm install cron-job
+npm install cron-job-node-js
 ```
 
 ## Usage
-Here's a basic example of how to use cron-job:
+Here's a basic example of how to use cron-job-node-js:
 
 ## In ES6
 
 ```
-import cronJob from "cron-job"; 
+import cronJob from "cron-job-node-js"; 
 
 // Create a new instance of the cron job scheduler
 const scheduler = cronJob();
@@ -123,7 +128,7 @@ console.log('Available Events:', scheduler.getEvents());
 
 ## Demo Examples
 ```
-import CronJob from 'cron-job';
+import CronJob from 'cron-job-node-js';
 
 // Initialize the cron job instance
 const cronJob = new CronJob();
@@ -154,7 +159,7 @@ setTimeout(() => {
 ## In common JS:
 
 ```
-const cronJob = require('cron-job');
+const cronJob = require('cron-job-node-js');
 
 const cronJob = cronJob();
 
@@ -210,10 +215,10 @@ setTimeout(() => {
 - `jobStopped`: Emitted when the scheduler is stopped
 
 # Design Pattern
-cron-job uses the Observer pattern through Node.js's EventEmitter. This allows for loose coupling between the scheduler and any code reacting to job events.
+cron-job-node-js uses the Observer pattern through Node.js's EventEmitter. This allows for loose coupling between the scheduler and any code reacting to job events.
 
 ## When to Use
-Use cron-job when you need to:
+Use cron-job-node-js when you need to:
 
 - Schedule recurring tasks in your Node.js application
 - Run background jobs at specific times

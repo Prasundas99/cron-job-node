@@ -1,12 +1,12 @@
 {
-  "name": "cron-job",
+  "name": "cron-job-node-js",
   "version": "1.0.0",
   "description": "A flexible and efficient cron job scheduler for Node.js applications.",
   "main": "index.js",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Prasundas99/cron-job-node"
+    "url": "git+https://github.com/Prasundas99/cron-job-node.git"
   },
   "keywords": [
     "cron",
@@ -16,7 +16,8 @@
     "cron job",
     "scheduler",
     "nodejs cron job",
-    "schedule"
+    "schedule",
+    "cron-job-node-js"
   ],
   "author": "Prasun Das",
   "license": "MIT"
