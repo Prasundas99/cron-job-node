@@ -3,13 +3,21 @@
   "version": "1.0.0",
   "description": "A flexible and efficient cron job scheduler for Node.js applications.",
   "main": "index.js",
-  "directories": {
-    "example": "examples"
-  },
   "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Prasundas99/cron-job-node"
   },
+  "keywords": [
+    "cron",
+    "nodejs",
+    "cron-job",
+    "cronjob",
+    "cron job",
+    "scheduler",
+    "nodejs cron job",
+    "schedule"
+  ],
   "author": "Prasun Das",
-  "license": "ISC"
+  "license": "MIT"
 }

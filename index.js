@@ -337,6 +337,7 @@ const cronJob = () => {
     resume: resume,
     on: on,
     off: off,
+    getEvents: eventsEnum,
   };
 };
 
